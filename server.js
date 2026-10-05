@@ -1,17 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 const supabase = require('./supabase') //importa a conexão om supabase
-const app = express();
-const PORT = process.env.PORT || 3000;
 
+const app = express();
 // Middleware essenciais
 app.use(cors()); //Permite que o frontend acesse o backend
 app.use(express.json()); //Permite que o Express entenda as requisições com o corpo em JSON
 
 //Passo 1 memória RAM do servidor
 let produtosEmMemoria = [
-    {id:1,nome: 'Teclado Mecânico RGB', preco: 150.00},
-    {id: 2, nome: 'Mouse Gamer 3200', preco: 85.50}
+    {id:1,nome: 'Mouse Óptico', preco: 45.00},
+    {id: 2, nome: 'Teclado USB', preco: 70.50}
 ];
 
 // Rota GET
@@ -43,7 +42,7 @@ app.post('/produtos', (req, res)=> {
     console.log(`[POST / produtos] Produtos adicionados na RAM: ${novoProduto.nome}`);
 
     res.status(201).json(novoProduto);
-})
+});
 
 // Rota PUT
 app.put('/produtos/:id', (req, res) =>{
@@ -57,9 +56,13 @@ app.put('/produtos/:id', (req, res) =>{
         });
     }
 
+    if(typeof nome !== 'string' || nome.trim() === '' || !Number.isFinite(Number(preco))) {
+        return res.status(400).json({mensagem: 'Informe um nome e um preço válidos'});
+    }
+
     produtosEmMemoria[index] = {
         ...produtosEmMemoria[index],
-        nome: nome || produtosEmMemoria[index].nome,
+        nome: nome.trim() || produtosEmMemoria[index].nome,
         preco: preco != undefined ?  parseFloat(preco) : produtosEmMemoria[index].preco
     };
 
@@ -71,8 +74,8 @@ app.put('/produtos/:id', (req, res) =>{
 
 // Rota DELETE
 app.delete('/produtos/:id', (req, res) => {
-    const {id} = req.params;
-    const index = produtosEmMemoria.findIndex(p => p.id === parseInt(id));
+    const {id} = Number(req.params.id);
+    const index = produtosEmMemoria.findIndex(p => p.id === id);
 
     if (!index) {
         return res.status(404).json({
@@ -88,7 +91,6 @@ app.delete('/produtos/:id', (req, res) => {
 });
 
 // listen
-app.listen(PORT, () =>{
-    console.log('==============================================================');
-    console.log(`Servidor Back-End rodando na nuvem`); //http://localhost:${PORT}
+app.listen(3000, () =>{
+    console.log('Servidor Back-End rodando na nuvem'); //http://localhost:${PORT}
 });
